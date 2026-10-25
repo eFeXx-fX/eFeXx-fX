@@ -1,0 +1,2 @@
+# Os scripts do gráfico (contribuicoes.py e grafico.py) usam só a biblioteca
+# padrão do Python 3. Não há pacote para instalar.

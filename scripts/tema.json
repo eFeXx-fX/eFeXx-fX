@@ -1,0 +1,19 @@
+{
+  "fundo": "#080E0A",
+  "texto": "#c8f7d8",
+  "apagado": "#6a6e95",
+  "borda_ativa": "#39FF14",
+  "destaque": "#39FF14",
+  "chave": "#4fe88f",
+  "secao": "#7cf8f7",
+  "prompt": "#7cf8f7",
+  "pendente": "#e0af68",
+  "grafico": [
+    "#0f1a13",
+    "#0f3d1c",
+    "#17702e",
+    "#2bb83f",
+    "#39FF14",
+    "#a4ffa0"
+  ]
+}
