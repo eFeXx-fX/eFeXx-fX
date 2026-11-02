@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Busca o calendário público de contribuições de um usuário do GitHub e grava
-data/contributions.json com os dias e um resumo (total, sequências, melhor dia).
+data/contributions.json com os dias, um resumo (total, sequências, melhor dia)
+e a data em que a conta foi criada.
 
 Lê o mesmo trecho de HTML que a página do perfil carrega
 (https://github.com/users/<usuario>/contributions), então não precisa de token.
@@ -53,6 +54,20 @@ class _Calendario(HTMLParser):
             self._dica = None
 
 
+def buscar_entrada(usuario, tempo_limite=30):
+    """Data em que a conta foi criada, no formato AAAA-MM-DD, e o ano."""
+    pedido = urllib.request.Request(
+        f"https://api.github.com/users/{usuario}",
+        headers={
+            "User-Agent": "efexx-perfil (+https://github.com/eFeXx-fX)",
+            "Accept": "application/vnd.github+json",
+        })
+    with urllib.request.urlopen(pedido, timeout=tempo_limite) as resposta:
+        info = json.load(resposta)
+    data = info["created_at"][:10]
+    return {"data": data, "ano": int(data[:4])}
+
+
 def buscar(usuario, tempo_limite=30):
     pedido = urllib.request.Request(ENDERECO.format(usuario=usuario), headers={
         "User-Agent": "efexx-perfil (+https://github.com/eFeXx-fX)", "Accept": "text/html"})
@@ -95,15 +110,17 @@ def resumo(dias):
 
 def main():
     dias = buscar(USUARIO)
+    entrada = buscar_entrada(USUARIO)
     dados = {"usuario": USUARIO,
              "gerado_em": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+             "entrada": entrada,
              "resumo": resumo(dias), "dias": dias}
     os.makedirs(os.path.dirname(SAIDA), exist_ok=True)
     with open(SAIDA, "w", encoding="utf-8") as f:
         json.dump(dados, f, ensure_ascii=False)
     r = dados["resumo"]
     print(f"gerado {os.path.normpath(SAIDA)}: {r['total']} contribuições, "
-          f"sequência atual {r['atual']}, maior {r['maior']}")
+          f"sequência atual {r['atual']}, maior {r['maior']}, início em {entrada['ano']}")
 
 
 if __name__ == "__main__":
