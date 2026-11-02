@@ -5,7 +5,7 @@
 -->
 <div align="center">
 
-<img src="./efexx-desktop.svg" width="860" alt="Área de trabalho no estilo Omarchy com o retrato em ASCII de Jeronimo Adornes, fastfetch e o painel com cargo, ferramentas e destaques" />
+<img src="./efexx-desktop.svg" width="860" alt="Área de trabalho no estilo Omarchy com o retrato em ASCII, fastfetch e o painel com cargo, ferramentas e destaques" />
 
 ## Jeronimo Adornes
 

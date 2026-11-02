@@ -5,7 +5,8 @@ de contribuições do perfil, em SVG, dentro de uma janela no estilo Omarchy:
 borda fina colorida, sem barra de título e prompt do starship no topo.
 
 Semanas são colunas e dias são linhas, como no GitHub. Embaixo ficam a
-legenda (Menos, Mais) e o resumo com datas no formato brasileiro. Na versão
+legenda (Menos, Mais) e o resumo com datas no formato brasileiro. O ano em
+que a conta foi criada aparece em destaque no canto do prompt. Na versão
 animada, as semanas aparecem da esquerda para a direita uma vez só.
 
 As cores vêm de scripts/tema.json (gerado localmente pelo preencher.py);
@@ -66,8 +67,32 @@ def plural(n):
     return "dia" if n == 1 else "dias"
 
 
+def selo_inicio(t, largura, ano, data_iso):
+    """Caixa no canto do prompt com o ano em que a conta foi criada."""
+    largura_caixa, altura_caixa = 132, 28
+    x = largura - MARGEM - largura_caixa
+    y = 6
+    rotulo = (
+        f'<text x="{x + largura_caixa / 2:.1f}" y="{y + 19}" font-size="13" '
+        f'text-anchor="middle" xml:space="preserve">'
+        f'<tspan fill="{t["texto"]}">início </tspan>'
+        f'<tspan fill="{t["destaque"]}" font-weight="700" font-size="16">{esc(ano)}</tspan>'
+        f'</text>'
+    )
+    return (
+        "<g>"
+        + tag("title", f"Conta criada em {data_br(data_iso)}")
+        + tag("rect", x=x, y=y, width=largura_caixa, height=altura_caixa, rx=4,
+              fill="#0f3d1c", stroke=t["destaque"], stroke_width=1.5)
+        + rotulo
+        + "</g>"
+    )
+
+
 def desenhar(dados):
     t, dias, r = TEMA, dados["dias"], dados["resumo"]
+    entrada = dados.get("entrada") or {"data": "2022-12-25", "ano": 2022}
+    ano_inicio = int(entrada["ano"])
     primeiro = datetime.date.fromisoformat(dias[0]["date"])
     antes = (primeiro.weekday() + 1) % 7        # semana começa no domingo, como no GitHub
     semanas = (antes + len(dias) + 6) // 7
@@ -77,7 +102,7 @@ def desenhar(dados):
     altura = base_grade + 112
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{largura}" height="{altura}" '
            f'viewBox="0 0 {largura} {altura}" font-family="{FONTE}" role="img">',
-           tag("title", "Gráfico de contribuições no GitHub no último ano"),
+           tag("title", f"Gráfico de contribuições no GitHub no último ano. Início em {ano_inicio}"),
            tag("rect", width=largura, height=altura, fill=t["fundo"]),
            tag("rect", x=BORDA / 2, y=BORDA / 2, width=largura - BORDA, height=altura - BORDA,
                fill="none", stroke=t["borda_ativa"], stroke_width=BORDA)]
@@ -86,9 +111,12 @@ def desenhar(dados):
     out.append(f'<text x="{MARGEM}" y="26" font-size="12.5" xml:space="preserve">'
                f'<tspan fill="{t["prompt"]}" font-weight="700">~/contribuicoes \u276f</tspan>'
                f'<tspan fill="{t["texto"]}"> contribuicoes --ultimo-ano</tspan></text>')
+    out.append(selo_inicio(t, largura, ano_inicio, entrada["data"]))
 
-    # meses em cima e dias da semana à esquerda
+    # meses em cima e dias da semana à esquerda. O ano muda de cor quando é o
+    # ano em que a conta foi criada.
     visto = None
+    ano_visto = None
     for i, d in enumerate(dias):
         data = datetime.date.fromisoformat(d["date"])
         col = (i + antes) // 7
@@ -96,6 +124,12 @@ def desenhar(dados):
             visto = data.month
             out.append(tag("text", MESES[data.month - 1], x=x0 + col * PASSO, y=TOPO_GRADE - 8,
                            font_size=10, fill=t["apagado"]))
+            if data.year != ano_visto:
+                ano_visto = data.year
+                cor = t["destaque"] if data.year == ano_inicio else t["apagado"]
+                out.append(tag("text", str(data.year), x=x0 + col * PASSO, y=TOPO_GRADE - 22,
+                               font_size=11, fill=cor,
+                               font_weight=700 if data.year == ano_inicio else 400))
     for linha, nome in DIAS_ROTULO.items():
         out.append(tag("text", nome, x=MARGEM, y=TOPO_GRADE + linha * PASSO + QUADRO - 2,
                        font_size=9.5, fill=t["apagado"]))
