@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Busca o calendário público de contribuições de um usuário do GitHub e grava
-data/contributions.json com os dias, um resumo (total, sequências, melhor dia)
-e a data em que a conta foi criada.
+Busca o calendário público de contribuições de um usuário do GitHub, de todos
+os anos desde a criação da conta, e grava data/contributions.json com os dias,
+um resumo (total, sequências, melhor dia) e a data em que a conta foi criada.
 
 Lê o mesmo trecho de HTML que a página do perfil carrega
 (https://github.com/users/<usuario>/contributions), então não precisa de token.
@@ -68,8 +68,11 @@ def buscar_entrada(usuario, tempo_limite=30):
     return {"data": data, "ano": int(data[:4])}
 
 
-def buscar(usuario, tempo_limite=30):
-    pedido = urllib.request.Request(ENDERECO.format(usuario=usuario), headers={
+def buscar(usuario, inicio=None, fim=None, tempo_limite=30):
+    endereco = ENDERECO.format(usuario=usuario)
+    if inicio and fim:
+        endereco += f"?from={inicio}&to={fim}"
+    pedido = urllib.request.Request(endereco, headers={
         "User-Agent": "efexx-perfil (+https://github.com/eFeXx-fX)", "Accept": "text/html"})
     with urllib.request.urlopen(pedido, timeout=tempo_limite) as resposta:
         html = resposta.read().decode("utf-8", "replace")
@@ -82,10 +85,37 @@ def buscar(usuario, tempo_limite=30):
             n = 0 if achado.group(1).lower() == "no" else int(achado.group(1).replace(",", ""))
         else:
             n = celula["level"]  # sem tooltip: o nível é o melhor que se sabe
+        if inicio and fim and not inicio <= celula["date"] <= fim:
+            continue
         dias.append({"date": celula["date"], "count": n, "level": celula["level"]})
-    if len(dias) < 300:
-        raise RuntimeError(f"esperava um ano inteiro de dias do GitHub, vieram {len(dias)}")
     dias.sort(key=lambda d: d["date"])
+    if inicio and fim:
+        esperado = (datetime.date.fromisoformat(fim) - datetime.date.fromisoformat(inicio)).days + 1
+        if len(dias) < max(7, int(esperado * 0.9)):
+            raise RuntimeError(f"esperava {esperado} dias entre {inicio} e {fim}, vieram {len(dias)}")
+    elif len(dias) < 300:
+        raise RuntimeError(f"esperava um ano inteiro de dias do GitHub, vieram {len(dias)}")
+    return dias
+
+
+def buscar_historico(usuario, entrada):
+    """Todos os dias desde a criação da conta até hoje, um ano por pedido."""
+    hoje = datetime.date.today()
+    por_data = {}
+    for ano in range(int(entrada["ano"]), hoje.year + 1):
+        ini = datetime.date(ano, 1, 1)
+        fim = datetime.date(ano, 12, 31)
+        if ini < datetime.date.fromisoformat(entrada["data"]):
+            ini = datetime.date.fromisoformat(entrada["data"])
+        if fim > hoje:
+            fim = hoje
+        if ini > fim:
+            continue
+        for dia in buscar(usuario, ini.isoformat(), fim.isoformat()):
+            por_data[dia["date"]] = dia
+    dias = [por_data[k] for k in sorted(por_data)]
+    if len(dias) < 300:
+        raise RuntimeError(f"esperava o histórico desde {entrada['data']}, vieram {len(dias)} dias")
     return dias
 
 
@@ -109,8 +139,8 @@ def resumo(dias):
 
 
 def main():
-    dias = buscar(USUARIO)
     entrada = buscar_entrada(USUARIO)
+    dias = buscar_historico(USUARIO, entrada)
     dados = {"usuario": USUARIO,
              "gerado_em": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
              "entrada": entrada,
@@ -119,8 +149,8 @@ def main():
     with open(SAIDA, "w", encoding="utf-8") as f:
         json.dump(dados, f, ensure_ascii=False)
     r = dados["resumo"]
-    print(f"gerado {os.path.normpath(SAIDA)}: {r['total']} contribuições, "
-          f"sequência atual {r['atual']}, maior {r['maior']}, início em {entrada['ano']}")
+    print(f"gerado {os.path.normpath(SAIDA)}: {r['total']} contribuições desde {entrada['ano']}, "
+          f"sequência atual {r['atual']}, maior {r['maior']}")
 
 
 if __name__ == "__main__":
