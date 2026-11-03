@@ -13,6 +13,7 @@
 
 Dashboards, apps e agentes de IA para resolver problemas de negócio.
 
+<a href="https://efexx-tech-site.vercel.app/"><img src="https://img.shields.io/badge/Site-efexx.tech-0f3d1c?style=for-the-badge&labelColor=080E0A" alt="Site" /></a>
 <a href="https://www.linkedin.com/in/jeronimoadornes"><img src="https://img.shields.io/badge/LinkedIn-jeronimoadornes-0f3d1c?style=for-the-badge&labelColor=080E0A" alt="LinkedIn" /></a>
 <a href="https://www.instagram.com/efexx.tech"><img src="https://img.shields.io/badge/Instagram-%40efexx.tech-0f3d1c?style=for-the-badge&labelColor=080E0A&logo=instagram&logoColor=39FF14" alt="Instagram" /></a>
 <a href="https://github.com/eFeXx-fX/omarchy-efexx-theme"><img src="https://img.shields.io/badge/Omarchy-tema%20efexx-0f3d1c?style=for-the-badge&labelColor=080E0A&logo=archlinux&logoColor=39FF14" alt="Tema do Omarchy" /></a>
@@ -51,14 +52,14 @@ Em projetos sob demanda, levo dados e IA para produção: plataformas de dados, 
 
 ## Contato
 
-<a href="https://www.linkedin.com/in/jeronimoadornes">LinkedIn</a> · <a href="https://www.instagram.com/efexx.tech">Instagram @efexx.tech</a>
+<a href="https://efexx-tech-site.vercel.app/">Site</a> · <a href="https://www.linkedin.com/in/jeronimoadornes">LinkedIn</a> · <a href="https://www.instagram.com/efexx.tech">Instagram @efexx.tech</a>
 
 Também ofereço mentoria e consultoria em Power BI e IA aplicada.
 
 <div align="center">
 
 <!-- gráfico de contribuições, atualizado pelo workflow diário -->
-<img src="./contrib-heatmap.svg" width="860" alt="Gráfico de contribuições no GitHub" />
+<img src="./contrib-heatmap.svg" width="860" alt="Gráfico de contribuições no GitHub desde 2022, com os meses de todos os anos juntos" />
 
 </div>
 
